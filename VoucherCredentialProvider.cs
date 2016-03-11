@@ -8,7 +8,8 @@ namespace BlackBarLabs.Security.CredentialProvider.Voucher
         public async Task<string> RedeemTokenAsync(Uri providerId, string username, string accessToken)
         {
             var trustedProvider = Utilities.GetTrustedProviderId();
-            if (String.Compare(providerId.AbsoluteUri, trustedProvider.AbsoluteUri) != 0)
+            var trimChars = new char[] { '/' };
+            if (String.Compare(providerId.AbsoluteUri.TrimEnd(trimChars), trustedProvider.AbsoluteUri.TrimEnd(trimChars)) != 0)
                 return default(string);
 
             var userNameId = await Task.FromResult(Guid.Parse(username));
