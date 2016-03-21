@@ -7,12 +7,13 @@ namespace BlackBarLabs.Security.CredentialProvider.Voucher
 {
     public class VoucherCredentialProvider : IProvideCredentials
     {
-        public async Task<string> RedeemTokenAsync(Uri providerId, string username, string accessToken)
+        public async Task<TResult> RedeemTokenAsync<TResult>(Uri providerId, string username, string accessToken,
+            Func<string, TResult> success, Func<TResult> invalidCredentials, Func<TResult> couldNotConnect)
         {
             var trustedProvider = Utilities.GetTrustedProviderId();
             var trimChars = new char[] { '/' };
             if (String.Compare(providerId.AbsoluteUri.TrimEnd(trimChars), trustedProvider.AbsoluteUri.TrimEnd(trimChars)) != 0)
-                return default(string);
+                return invalidCredentials();
 
             var userNameId = await Task.FromResult(Guid.Parse(username));
 
@@ -20,11 +21,11 @@ namespace BlackBarLabs.Security.CredentialProvider.Voucher
                 (authId) =>
                 {
                     if (authId.CompareTo(userNameId) != 0)
-                        return default(string);
-                    return authId.ToString();
+                        return invalidCredentials();
+                    return success(authId.ToString());
                 },
-                () => default(string),
-                () => default(string));
+                () => invalidCredentials(),
+                () => invalidCredentials());
         }
     }
 }
