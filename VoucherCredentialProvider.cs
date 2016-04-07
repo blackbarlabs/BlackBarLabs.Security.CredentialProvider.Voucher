@@ -15,7 +15,7 @@ namespace BlackBarLabs.Security.CredentialProvider.Voucher
 
             var userNameId = await Task.FromResult(Guid.Parse(username));
 
-            return Utilities.ValidateToken(accessToken,
+            return Tokens.VoucherTools.ValidateToken(accessToken,
                 (authId) =>
                 {
                     if (authId.CompareTo(userNameId) != 0)
