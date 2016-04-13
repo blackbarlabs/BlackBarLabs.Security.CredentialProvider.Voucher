@@ -26,5 +26,11 @@ namespace BlackBarLabs.Security.CredentialProvider.Voucher
                 (errorMessage) => invalidCredentials(errorMessage),
                 (errorMessage) => invalidCredentials(errorMessage));
         }
+
+        public Task<TResult> UpdateTokenAsync<TResult>(Uri providerId, string username, string token, Func<string, TResult> success, Func<TResult> doesNotExist,
+            Func<TResult> updateFailed)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
