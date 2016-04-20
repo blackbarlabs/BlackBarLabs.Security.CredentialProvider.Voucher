@@ -19,7 +19,8 @@ namespace BlackBarLabs.Security.CredentialProvider.Voucher
                 (authId) =>
                 {
                     if (authId.CompareTo(userNameId) != 0)
-                        return invalidCredentials("authId does not match userNameId");
+                        return invalidCredentials(
+                            String.Format("authId:[{0}] does not match userNameId:[{1}]", authId, userNameId));
                     return success(authId.ToString());
                 },
                 (errorMessage) => invalidCredentials(errorMessage),
