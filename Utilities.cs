@@ -19,11 +19,15 @@ namespace BlackBarLabs.Security.CredentialProvider.Voucher
             byte[] signatureData;
             var hashedData = ComputeHashData(authId, validUntilUtc, out signatureData);
 
-            var trustedVoucherPrivateKey = RSA.RSAFromConfig("BlackbarLabs.Security.CredentialProvider.Voucher.key");            
-            var signature = trustedVoucherPrivateKey.SignHash(hashedData, CryptoConfig.MapNameToOID("SHA256"));
-
-            var tokenBytes = signatureData.Concat(signature).ToArray();
-            return Convert.ToBase64String(tokenBytes);
+            return RSA.FromConfig("BlackbarLabs.Security.CredentialProvider.Voucher.key",
+                (trustedVoucherPrivateKey) =>
+                {
+                    var signature = trustedVoucherPrivateKey.SignHash(hashedData, CryptoConfig.MapNameToOID("SHA256"));
+                    var tokenBytes = signatureData.Concat(signature).ToArray();
+                    return Convert.ToBase64String(tokenBytes);
+                },
+                (setting) => { throw new Exception(); },
+                (setting, issue) => { throw new Exception(); });
         }
 
         public static T ValidateToken<T>(string accessToken,
@@ -63,14 +67,20 @@ namespace BlackBarLabs.Security.CredentialProvider.Voucher
             byte[] signatureData;
             var hashedData = ComputeHashData(authId, validUntilUtc, out signatureData);
 
-            var trustedVoucher = RSA.RSAFromConfig("BlackbarLabs.Security.CredentialProvider.Voucher.key.pub");
-            if (!trustedVoucher.VerifyHash(hashedData, CryptoConfig.MapNameToOID("SHA256"), providedSignature))
-                return invalidSignature("Cannot verify hash - authId: " + authId +
-                    "   validUntilUtc: " + validUntilUtc +
-                    "   hashedData: " + hashedData +
-                    "   providedSignature: " + providedSignature);
+            var result = RSA.FromConfig("BlackbarLabs.Security.CredentialProvider.Voucher.key.pub",
+                (trustedVoucher) =>
+                {
+                    if (!trustedVoucher.VerifyHash(hashedData, CryptoConfig.MapNameToOID("SHA256"), providedSignature))
+                        return invalidSignature("Cannot verify hash - authId: " + authId +
+                            "   validUntilUtc: " + validUntilUtc +
+                            "   hashedData: " + hashedData +
+                            "   providedSignature: " + providedSignature);
 
-            return success(authId);
+                    return success(authId);
+                },
+                (missing) => { throw new Exception(); },
+                (missing, issue) => { throw new Exception(); });
+            return result;
         }
 
         private static byte [] ComputeHashData(Guid authId, DateTime validUntilUtc, out byte [] signatureData)
