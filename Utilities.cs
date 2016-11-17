@@ -67,7 +67,7 @@ namespace BlackBarLabs.Security.CredentialProvider.Voucher
             byte[] signatureData;
             var hashedData = ComputeHashData(authId, validUntilUtc, out signatureData);
 
-            var result = RSA.FromConfig("BlackbarLabs.Security.CredentialProvider.Voucher.key.pub",
+            var result = RSA.FromConfig("BlackbarLabs.Security.Voucher.key.pub",
                 (trustedVoucher) =>
                 {
                     if (!trustedVoucher.VerifyHash(hashedData, CryptoConfig.MapNameToOID("SHA256"), providedSignature))
